@@ -7,6 +7,9 @@ Keys used is iButton.
 == Links ==
 * http://tushev.org/articles/arduino/item/50-reading-ibutton-with-arduino
 
-
+== BOM == 
 * [http://www.digikey.com/product-detail/en/DS9092L%2B/DS9092L%2B-ND/1768930 digikey.com - DS9092L+-ND]
+* [http://www.digikey.com/product-detail/en/DS1990R-F3%23/DS1990R-F3%23-ND/1769196 digikey.com - DS1990R-F3#-ND]
+* [http://www.digikey.com/product-detail/en/DS1990R-F5%23/DS1990R-F5%23-ND/1769193 digikey.com - DS1990R-F5#-ND]
+* [http://www.digikey.com/product-detail/en/DS9093A%2B/DS9093A%2B-ND/1769386 digikey.com - DS9093A+-ND]
 
