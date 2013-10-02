@@ -1,0 +1,12 @@
+== FunTechHouse_Door ==
+
+Door controll system.
+Keys used is iButton.
+
+
+== Links ==
+* http://tushev.org/articles/arduino/item/50-reading-ibutton-with-arduino
+
+
+* [http://www.digikey.com/product-detail/en/DS9092L%2B/DS9092L%2B-ND/1768930 digikey.com - DS9092L+-ND]
+
