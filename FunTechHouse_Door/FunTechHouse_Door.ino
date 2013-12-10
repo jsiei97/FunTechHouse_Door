@@ -65,10 +65,6 @@ void loop(void)
     if(getKeyCode())
     {
         snprintf(str, 17, "%02X%02X%02X%02X%02X%02X%02X%02X",
-                addr[7], addr[6], addr[5], addr[4],
-                addr[3], addr[2], addr[1], addr[0]);
-        Serial.println(str);
-        snprintf(str, 17, "%02X%02X%02X%02X%02X%02X%02X%02X",
                 addr[0], addr[1], addr[2], addr[3],
                 addr[4], addr[5], addr[6], addr[7]);
         Serial.println(str);
@@ -133,5 +129,16 @@ bool getKeyCode()
 
     //Serial.println("ok");
     ds.reset();
+
+    //Since I like the address the other way, let's fix it
+    int i,j;
+    byte tmp;
+    for( i=0,j=7; i<4 ;i++,j-- )
+    {
+        tmp = addr[i];
+        addr[i]=addr[j];
+        addr[j]=tmp;
+    }
+
     return true;
 }
