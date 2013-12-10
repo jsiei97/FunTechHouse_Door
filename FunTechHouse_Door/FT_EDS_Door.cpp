@@ -26,8 +26,30 @@
 
 #include "FT_EDS.h"
 #include "FT_EDS_Door.h"
+#include "IntegerExtra.h"
 
 //#include <QDebug>
+
+bool FT_EDS_Door::appendStr(edsId id, edsType type, uint8_t* data, uint16_t len)
+{
+	if(len != 16)
+		return false;
+
+	char str[5];
+	str[0]='0';
+	str[1]='x';
+	str[4]='\0';
+
+	int from,to;
+	for(from=0,to=0 ; from<len; from+=2, to+=1)
+	{
+		str[2] = data[from];
+		str[3] = data[from+1];
+		data[to] =  IntegerExtra::hex2uint((char*)str);
+	}
+
+	return appendDE(id, type, data, 8);
+}
 
 bool FT_EDS_Door::appendDE(edsId id, edsType type, uint8_t* data, uint16_t len)
 {
@@ -72,11 +94,32 @@ bool FT_EDS_Door::appendDE(edsId id, edsType type, uint8_t* data, uint16_t len)
 	{
 		EEPROM.write(point+i, data[i]);
 	}
-	
+
 	posFreeData = point;
     //write16(pos+2, (uint16_t)type); //deType
-	
+
 	return true;
+}
+
+bool FT_EDS_Door::removeStr(edsId id, edsType type, uint8_t* data, uint16_t len)
+{
+	if(len != 16)
+		return false;
+
+	char str[5];
+	str[0]='0';
+	str[1]='x';
+	str[4]='\0';
+
+	int from,to;
+	for(from=0,to=0 ; from<len; from+=2, to+=1)
+	{
+		str[2] = data[from];
+		str[3] = data[from+1];
+		data[to] =  IntegerExtra::hex2uint((char*)str);
+	}
+
+	return removeDE(id, type, data, 8);
 }
 
 bool FT_EDS_Door::removeDE(edsId id, edsType type, uint8_t* data, uint16_t len)
@@ -107,27 +150,34 @@ bool FT_EDS_Door::removeDE(edsId id, edsType type, uint8_t* data, uint16_t len)
 	uint16_t size  = read16(pos+4);
 	uint32_t point = read32(pos+6);
 
-	//The top byte in the last ok chunk
-	rmKeyPos--;
-	if(rmKeyPos <= point)
+
+	if(rmKeyPos == point)
+	{
+		//no need to copy, just move the pointer
+	}
+	else if(rmKeyPos <= point)
 	{
 		//this is just wrong!
 		return false;
 	}
-
-	while(rmKeyPos>=point)
+	else
 	{
-		EEPROM.write(rmKeyPos+8, EEPROM.read(rmKeyPos));
+		//The top byte in the last ok chunk
 		rmKeyPos--;
+		while(rmKeyPos>=point)
+		{
+			EEPROM.write(rmKeyPos+8, EEPROM.read(rmKeyPos));
+			rmKeyPos--;
+		}
 	}
-	
+
 	point+=8;
 	write32(pos+6, point);
 	posFreeData = point;
 
 	size-=8;
 	write16(pos+4, size);
-	
+
 	return true;
 }
 
@@ -135,7 +185,7 @@ bool FT_EDS_Door::checkKey(edsId id, uint8_t* data, uint16_t len)
 {
 	if(checkKeyPos(id, data, len) != 0)
 		return true;
-	
+
 	return false;
 }
 
@@ -144,8 +194,6 @@ bool FT_EDS_Door::checkKey(edsId id, uint8_t* data, uint16_t len)
  */
 uint32_t FT_EDS_Door::checkKeyPos(edsId id, uint8_t* data, uint16_t len)
 {
-	//qDebug() << __func__ << __LINE__;
-
     unsigned int pos = getPos(id);
     if(0==pos)
         return 0;
@@ -163,7 +211,6 @@ uint32_t FT_EDS_Door::checkKeyPos(edsId id, uint8_t* data, uint16_t len)
 		int i;
 		for( i=0; i<8 && found; i++ )
 		{
-			//qDebug() << EEPROM.read(point+i);
 			if( EEPROM.read(point+i) != data[i] )
 			{
 				found = false;
@@ -173,7 +220,7 @@ uint32_t FT_EDS_Door::checkKeyPos(edsId id, uint8_t* data, uint16_t len)
 		if(found)
 			return point;
 	}
-	
+
 	return 0;
 }
 
@@ -186,3 +233,34 @@ uint16_t FT_EDS_Door::getSize(edsId id)
 	return read16(pos+4);
 }
 
+unsigned int FT_EDS_Door::getParts(edsId id)
+{
+	return (unsigned int)(getSize(id)/8);
+}
+
+bool FT_EDS_Door::readPart(edsId id, edsType type, unsigned int part, uint8_t* data, uint16_t len)
+{
+    unsigned int pos = getPos(id);
+    if(0==pos)
+        return false;
+
+	//uint16_t type  = read16(pos+2);
+	uint16_t size  = read16(pos+4);
+	uint32_t point = read32(pos+6);
+
+	if(len<=4 || 0==size || 0==point)
+		return false;
+
+	uint16_t offset = part*8;
+	if(point+offset+len > EEPROM_MAX_SIZE)
+	{
+		return false;
+	}
+
+	for( unsigned int i=0 ; i<len ; i++ )
+	{
+		data[i] = EEPROM.read(point+offset+i);
+	}
+
+	return true;
+}

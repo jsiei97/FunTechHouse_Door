@@ -33,6 +33,7 @@ class Test_FT_EDS_Door : public QObject
 
     private slots:
 		void test_Append();
+		void test_List();
 
 		//Same as FT_EDS, but with FT_EDS_Door...
         void test_MAC();
@@ -86,7 +87,7 @@ void Test_FT_EDS_Door::test_Append()
 	uint8_t key2[8] = { 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
 	uint8_t key3[8] = { 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 	uint8_t key4[8] = { 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
-	
+
 	//Check if key1 can be found (it cant)
 	QVERIFY(!eds.checkKey(EDS_ONEWIRE_LIST, key1, 8));
 	QVERIFY(!eds.checkKey(EDS_ONEWIRE_LIST, key2, 8));
@@ -188,9 +189,125 @@ void Test_FT_EDS_Door::test_Append()
 	QCOMPARE(eds.getDEC(), (uint16_t)1);
 	QCOMPARE((unsigned int)eds.getFree(), (unsigned int)(EEPROM_MAX_SIZE-7-10-(8*4)));
 
+
+
+	//Append a classic string
+	uint8_t key5[8] = { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
+	uint8_t str5_1[17] = "1011121314151617";
+	uint8_t str5_2[17] = "1011121314151617";
+
+	if(!eds.appendStr(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, str5_1, 16))
+    {
+        HEXDUMP(&EEPROM.prom);
+        QFAIL("Error appendDE");
+    }
+	QCOMPARE((unsigned int)eds.getSize(EDS_ONEWIRE_LIST), (unsigned int)(8*5));
+
+	//HEXDUMP(&EEPROM.prom);
+	QCOMPARE(eds.getDEC(), (uint16_t)1);
+	QCOMPARE((unsigned int)eds.getFree(), (unsigned int)(EEPROM_MAX_SIZE-7-10-(8*5)));
+
+
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key1, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key2, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key3, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key4, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key5, 8));
+	//HEXDUMP(&EEPROM.prom);
+	
+	if(!eds.removeStr(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, str5_2, 16))
+    {
+        HEXDUMP(&EEPROM.prom);
+        QFAIL("Error removeStr");
+    }
+	QCOMPARE((unsigned int)eds.getSize(EDS_ONEWIRE_LIST), (unsigned int)(8*4));
+
+	QCOMPARE(eds.getDEC(), (uint16_t)1);
+	QCOMPARE((unsigned int)eds.getFree(), (unsigned int)(EEPROM_MAX_SIZE-7-10-(8*4)));
+
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key1, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key2, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key3, 8));
+	QVERIFY( eds.checkKey(EDS_ONEWIRE_LIST, key4, 8));
+	QVERIFY(!eds.checkKey(EDS_ONEWIRE_LIST, key5, 8));
+
 	//HEXDUMP(&EEPROM.prom);
 }
 
+void Test_FT_EDS_Door::test_List()
+{
+    FT_EDS_Door eds;
+
+    eds.format();
+    eds.init();
+    QCOMPARE(eds.getDEC(), (uint16_t)0);
+    QCOMPARE((unsigned int)eds.getFree(), (unsigned int)(EEPROM_MAX_SIZE-7));
+
+	uint8_t key1[8] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
+	uint8_t key2[8] = { 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
+	uint8_t key3[8] = { 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+	uint8_t key4[8] = { 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
+
+	QVERIFY(eds.appendDE(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, key1, 8));
+	QVERIFY(eds.appendDE(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, key2, 8));
+	QVERIFY(eds.appendDE(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, key3, 8));
+	QVERIFY(eds.appendDE(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, key4, 8));
+
+	//HEXDUMP(&EEPROM.prom);
+	//QCOMPARE(eds.getDEC(), (uint16_t)1);
+
+	uint16_t listSize = eds.getSize(EDS_ONEWIRE_LIST);
+	QCOMPARE((unsigned int)listSize,     (unsigned int)(8*4));
+	QCOMPARE((unsigned int)(listSize%8), (unsigned int)0);
+
+
+	uint8_t key[8];
+	unsigned int parts = eds.getParts(EDS_ONEWIRE_LIST);
+	QCOMPARE(parts, (unsigned int)(4));
+	QByteArray qKey;
+	for( int i=0 ; i<parts ; i++ )
+	{
+		QVERIFY(eds.readPart(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, i, key, 8));
+
+		qKey.append((char*)key, 8);
+		//qDebug() << qKey.toHex();
+	}
+	QCOMPARE(qKey.length(), 8*4);
+
+
+	QByteArray cmpKey;
+	cmpKey.append((char*)key4, 8);
+	cmpKey.append((char*)key3, 8);
+	cmpKey.append((char*)key2, 8);
+	cmpKey.append((char*)key1, 8);
+
+	//qDebug() << qKey.toHex();
+	//qDebug() << cmpKey.toHex();
+
+	QCOMPARE(cmpKey, qKey);
+
+	QVERIFY(eds.removeDE(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, key2, 8));
+	QVERIFY(eds.removeDE(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, key3, 8));
+
+	parts = eds.getParts(EDS_ONEWIRE_LIST);
+	QCOMPARE(parts, (unsigned int)(2));
+	qKey.clear();
+	for( int i=0 ; i<parts ; i++ )
+	{
+		QVERIFY(eds.readPart(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, i, key, 8));
+
+		qKey.append((char*)key, 8);
+		//qDebug() << qKey.toHex();
+	}
+	QCOMPARE(qKey.length(), 8*2);
+
+	cmpKey.clear();
+	cmpKey.append((char*)key4, 8);
+	cmpKey.append((char*)key1, 8);
+	QCOMPARE(cmpKey, qKey);
+
+    //HEXDUMP(&EEPROM.prom);
+}
 
 void Test_FT_EDS_Door::test_MAC()
 {
@@ -467,7 +584,7 @@ void Test_FT_EDS_Door::test_EDS_INT_16_data()
     {
         QTest::newRow ("test") << i;
     }
-    
+
 }
 
 void Test_FT_EDS_Door::test_EDS_INT_16()
@@ -506,7 +623,6 @@ void Test_FT_EDS_Door::test_EDS_INT_32_data()
     {
         QTest::newRow ("test") << i;
     }
-    
 }
 
 void Test_FT_EDS_Door::test_EDS_INT_32()

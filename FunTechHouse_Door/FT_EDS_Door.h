@@ -31,14 +31,18 @@ class FT_EDS_Door : public FT_EDS
 {
 	private:
 	public:
-        bool appendDE(edsId id, edsType type, uint8_t* data, uint16_t len);
-        bool removeDE(edsId id, edsType type, uint8_t* data, uint16_t len);
+        bool appendDE (edsId id, edsType type, uint8_t* data, uint16_t len);
+		bool appendStr(edsId id, edsType type, uint8_t* data, uint16_t len);
+        bool removeDE (edsId id, edsType type, uint8_t* data, uint16_t len);
+		bool removeStr(edsId id, edsType type, uint8_t* data, uint16_t len);
 
 		bool     checkKey   (edsId id, uint8_t* data, uint16_t len);
 		uint32_t checkKeyPos(edsId id, uint8_t* data, uint16_t len);
 
 		uint16_t getSize(edsId id);
 
+		unsigned int getParts(edsId id);
+		bool readPart(edsId id, edsType type, unsigned int part, uint8_t* data, uint16_t len);
 };
 
 #endif  // __FT_EDS_DOOR_H 
