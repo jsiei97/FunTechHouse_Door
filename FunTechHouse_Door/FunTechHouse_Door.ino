@@ -24,7 +24,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <EEPROM.h>
+#include "FT_EDS.h"
+#include "FT_EDS_Door.h"
 #include "OneWire.h"
+
+FT_EDS_Door eds;
 
 OneWire  ds(A0);
 byte addr[8];
@@ -32,46 +37,27 @@ byte addr[8];
 char str[18];
 bool blink;
 
-#define LIST_SIZE 2
-//Test list with some ok iButtons
-int keylist[LIST_SIZE][8] =
-{
-    { 0x01, 0x5D, 0x79, 0xA7, 0x09, 0x00, 0x00, 0x66},
-    { 0x01, 0x12, 0xE8, 0xA5, 0x09, 0x00, 0x00, 0x4A}
-};
-
-bool checkKey()
-{
-    for( int i=0 ; i<LIST_SIZE ; i++ )
-    {
-        bool hit = true;
-        for( int j=0 ; j<=7 ; j++ )
-        {
-            Serial.print(keylist[i][j], HEX);
-            Serial.print(" - ");
-            Serial.println(addr[j], HEX);
-
-            if(keylist[i][j] != addr[j])
-            {
-                hit = false;
-                break;
-            }
-        }
-
-        if(hit)
-        {
-            Serial.println("OK");
-            return true;
-        }
-
-    }
-    return false;
-}
 
 void setup(void)
 {
-    Serial.begin(115200);
-    pinMode(3, OUTPUT);
+    Serial.begin(9600);
+    pinMode(3, OUTPUT); //Indicatior LED
+    pinMode(4, OUTPUT); //Door lock relay
+
+    eds.init();
+
+    //Check what keys is in the EEPROM!
+    uint8_t key[8];
+    unsigned int parts = eds.getParts(EDS_ONEWIRE_LIST);
+    for( int i=0 ; i<parts ; i++ )
+    {
+        eds.readPart(EDS_ONEWIRE_LIST, EDS_BYTE_ARRAY, i, key, 8);
+        snprintf(str, 17, "%02X%02X%02X%02X%02X%02X%02X%02X",
+                key[0], key[1], key[2], key[3],
+                key[4], key[5], key[6], key[7]);
+        Serial.print(" - ");
+        Serial.println(str);
+    }
 }
 
 void loop(void)
@@ -87,11 +73,13 @@ void loop(void)
                 addr[4], addr[5], addr[6], addr[7]);
         Serial.println(str);
 
-        if(checkKey())
+        if(eds.checkKey(EDS_ONEWIRE_LIST, addr, 8))
         {
             //This is a valid key, open the door...
             digitalWrite(3, HIGH);
+            digitalWrite(4, HIGH);
             delay(5000);
+            digitalWrite(4, LOW);
         }
         else
         {
