@@ -35,7 +35,7 @@ OneWire  ds(A0);
 byte addr[8];
 
 char str[18];
-bool blink;
+int blink = 0;
 
 
 void setup(void)
@@ -93,17 +93,17 @@ void loop(void)
     //    Serial.println("no 1w...");
     //}
 
-    if(false == blink)
+    blink++;
+    if(20 == blink)
     {
         digitalWrite(3, HIGH);
-        blink = true;
     }
-    else
+    else if(40 == blink)
     {
         digitalWrite(3, LOW);
-        blink = false;
+        blink = 0;
     }
-    delay(500);
+    delay(50);
 }
 
 
