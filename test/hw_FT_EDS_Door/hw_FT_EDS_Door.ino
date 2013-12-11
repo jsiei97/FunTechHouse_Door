@@ -365,8 +365,9 @@ void setup()
     cmdp.cmd_init();
     cmdp.cmd_add_cmd("info", info);
     cmdp.cmd_add_cmd("format", format);
-    //cmdp.cmd_add_cmd("put", put);
-    //cmdp.cmd_add_cmd("get", get);
+
+    cmdp.cmd_add_cmd("put", put);
+    cmdp.cmd_add_cmd("get", get);
 
     cmdp.cmd_add_cmd("add", append);
     cmdp.cmd_add_cmd("rm",  remove);
