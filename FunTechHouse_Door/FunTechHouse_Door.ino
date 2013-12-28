@@ -41,8 +41,12 @@ int blink = 0;
 void setup(void)
 {
     Serial.begin(9600);
-    pinMode(3, OUTPUT); //Indicatior LED
+    pinMode(2, OUTPUT); //Indicatior LED (on the Door)
     pinMode(4, OUTPUT); //Door lock relay
+
+    pinMode(3, OUTPUT); //Status LED 1
+    pinMode(5, OUTPUT); //Status LED 2
+    pinMode(6, OUTPUT); //Status LED 3
 
     eds.init();
 
@@ -72,16 +76,28 @@ void loop(void)
         if(eds.checkKey(EDS_ONEWIRE_LIST, addr, 8))
         {
             //This is a valid key, open the door...
+            //Keep all led:s high
+            digitalWrite(2, HIGH);
             digitalWrite(3, HIGH);
             digitalWrite(4, HIGH);
             delay(5000);
+            digitalWrite(2, LOW);
             digitalWrite(4, LOW);
         }
         else
         {
             //This is a NOT valid key...
+            //Keep the status led off
             digitalWrite(3, LOW);
-            delay(3000);
+
+            //Blink fast on the door to indicate invalid key
+            for(int i=0; i<8; i++)
+            {
+                digitalWrite(2, HIGH);
+                delay(200);
+                digitalWrite(2, LOW);
+                delay(200);
+            }
         }
     }
     //else
