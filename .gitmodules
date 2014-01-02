@@ -1,3 +1,6 @@
 [submodule "mod/FT_EDS"]
 	path = mod/FT_EDS
 	url = git@github.com:jsiei97/FT_EDS.git
+[submodule "mod/FT_Time"]
+	path = mod/FT_Time
+	url = git@github.com:jsiei97/FT_Time.git

@@ -2,6 +2,9 @@
 # To read/write data on the EEPROM
 git submodule add git@github.com:jsiei97/FT_EDS.git mod/FT_EDS
 
+# QuickDate timesync into DS1307
+git submodule add git@github.com:jsiei97/FT_Time.git mod/FT_Time
+
 # Misc submodule commands
 git submodule status
 git submodule init
