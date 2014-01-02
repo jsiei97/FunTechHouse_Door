@@ -4,3 +4,6 @@
 [submodule "mod/FT_Time"]
 	path = mod/FT_Time
 	url = git@github.com:jsiei97/FT_Time.git
+[submodule "mod/pubsubclient"]
+	path = mod/pubsubclient
+	url = git@github.com:knolleary/pubsubclient.git

@@ -5,6 +5,9 @@ git submodule add git@github.com:jsiei97/FT_EDS.git mod/FT_EDS
 # QuickDate timesync into DS1307
 git submodule add git@github.com:jsiei97/FT_Time.git mod/FT_Time
 
+# MQTT - http://knolleary.net/arduino-client-for-mqtt/
+git submodule add git@github.com:knolleary/pubsubclient.git mod/pubsubclient
+
 # Misc submodule commands
 git submodule status
 git submodule init
