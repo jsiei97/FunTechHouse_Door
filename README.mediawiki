@@ -3,6 +3,10 @@
 Door controll system.
 Keys used is iButton.
 
+When door is opended or someone tried to open the door, this is sent to a mqtt server.
+
+Time is stored in the RTC DS1307 and for timesync I use 
+QuickDate (https://github.com/jsiei97/QuickDate) on a local webserver.
 
 == Links ==
 * http://tushev.org/articles/arduino/item/50-reading-ibutton-with-arduino
