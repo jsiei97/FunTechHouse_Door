@@ -8,6 +8,9 @@ When door is opended or someone tried to open the door, this is sent to a mqtt s
 Time is stored in the RTC DS1307 and for timesync I use 
 QuickDate (https://github.com/jsiei97/QuickDate) on a local webserver.
 
+Please note that to build this project you need a filesystem on your PC that supports symbolic links, 
+more or less you need a Linux based OS.
+
 == Links ==
 * http://tushev.org/articles/arduino/item/50-reading-ibutton-with-arduino
 
